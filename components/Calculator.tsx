@@ -1,4 +1,4 @@
-import Grid2 from "@mui/material/Unstable_Grid2";
+import Grid2 from "@mui/material/Unstable_Grid2"
 import {
   Box,
   Paper,
@@ -9,59 +9,73 @@ import {
   Button,
   Divider,
   Typography,
-} from "@mui/material";
-import { OutlinedInput } from "@mui/material";
-import axios from "axios";
+} from "@mui/material"
+import { OutlinedInput } from "@mui/material"
+import axios from "axios"
 
-import { useState, useRef, ChangeEvent, FormEvent } from "react";
+import { useState, useRef, ChangeEvent, FormEvent } from "react"
+import { useRouter } from "next/router"
 
-const Calculator = (): JSX.Element => {
-  const [operation, setOperation] = useState("");
-  const [result, setResult] = useState("");
+export default function Calculator({ op, res }) {
+  const [operation, setOperation] = useState(op[0] || "")
+  const [result, setResult] = useState(res)
+  const router = useRouter()
   // const first = useRef<HTMLInputElement>();
   // const second = useRef<HTMLInputElement>();
 
+  // console.log(op)
+
   const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    setOperation(e.target.value);
-  };
+    setOperation(e.target.value)
+  }
 
   interface MyForm extends EventTarget {
-    first: HTMLInputElement;
-    second: HTMLInputElement;
+    first: HTMLInputElement
+    second: HTMLInputElement
   }
 
   const handleCalculate = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const target = e.target as MyForm;
+    e.preventDefault()
+    const target = e.target as MyForm
     const query = {
       operation: operation,
       first: target.first.value,
       second: target.second.value,
-    };
+    }
+    console.log(query.first)
 
     axios
       .get(`/api/calculate/${query.operation}/${query.first}/${query.second}`)
       .then((res) => {
-        setResult(res.data.result);
+        setResult(res.data.result)
+        router.push({
+          pathname: `/${query.operation}/${query.first}/${query.second}`,
+          query: { res: res.data.result },
+        })
       })
       .catch((err) => {
-        setResult(err.response.data.message);
-      });
-  };
+        setResult(err.response.data.message)
+      })
+  }
 
   return (
     <form id="calculator-form" onSubmit={handleCalculate}>
       <Grid2 container spacing={1}>
         <Grid2 xs={5}>
           <FormControl fullWidth>
-            <TextField id="first" label="First Number" variant="outlined" />
+            <TextField
+              id="first"
+              label="First Number"
+              variant="outlined"
+              defaultValue={op[1] ? op[1] : ""}
+            />
           </FormControl>
         </Grid2>
         <Grid2 xs={2}>
           <FormControl fullWidth>
             <NativeSelect
               input={<OutlinedInput />}
-              defaultValue={""}
+              defaultValue={operation}
               inputProps={{
                 name: "operation",
                 id: "operation",
@@ -78,7 +92,12 @@ const Calculator = (): JSX.Element => {
         </Grid2>
         <Grid2 xs={5}>
           <FormControl fullWidth>
-            <TextField id="second" label="Second Number" variant="outlined" />
+            <TextField
+              id="second"
+              label="Second Number"
+              variant="outlined"
+              defaultValue={op[2] ? op[2] : ""}
+            />
           </FormControl>
         </Grid2>
         <Grid2 xs={12}>
@@ -102,7 +121,5 @@ const Calculator = (): JSX.Element => {
         </Grid2>
       </Grid2>
     </form>
-  );
-};
-export default Calculator;
-
+  )
+}

@@ -1,26 +1,45 @@
-import { useRouter } from "next/router"
-import { useEffect } from "react"
+import Home from "./index"
 
-export default function Comment() {
-  const router = useRouter()
-  const slug = (router.query.slug as string[]) || []
+interface Operation {
+  operation: string
+  one: number
+  two: number
+}
+
+export default function Comment({ slug, result }) {
+  return <>{<Home op={slug} res={result} />}</>
+}
+
+export async function getServerSideProps(context) {
+  const { slug, res } = context.query
+
   const operations = ["add", "subtract", "multiply", "divide"]
 
-  useEffect(() => {
-    if (slug[0] && !operations.includes(slug[0])) {
-      router.push("/404")
-    }
-    if (slug[1] && isNaN(Number(slug[1]))) {
-      router.push("/404")
-    }
-    if (slug[2] && isNaN(Number(slug[2]))) {
-      router.push("/404")
-    }
-  }, [router.query.slug])
+  let redirect = false
 
-  return (
-    <>
-      <h1>Slug: {slug.join("/")}</h1>
-    </>
-  )
+  if (!operations.includes(slug[0])) {
+    redirect = true
+  }
+  if (isNaN(Number(slug[1]))) {
+    redirect = true
+  }
+  if (isNaN(Number(slug[2]))) {
+    redirect = true
+  }
+  if (slug[3]) {
+    redirect = true
+  }
+  if (redirect) {
+    return {
+      redirect: {
+        permanent: false,
+        destination: "/404",
+      },
+      props: {},
+    }
+  }
+  let result = res || ""
+  return {
+    props: { slug, result },
+  }
 }
